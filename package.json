@@ -2,13 +2,17 @@
   "name": "raskelll",
 	"displayName": "Raskelll",
 	"description": "Run stuff",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"engines": {
 		"vscode": "^1.66.2"
 	},
 	"categories": [
 		"Other"
 	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/AlanSorrill/raskelll.git"
+	},
 	"activationEvents": [
         "onCommand:raskelll.reloadHS"
 	],

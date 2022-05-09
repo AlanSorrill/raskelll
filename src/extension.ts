@@ -2,6 +2,8 @@
 // Import the module and reference it with the alias vscode in your code below
 import { exec } from 'child_process';
 import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as path from 'path';
 
 // async function getProcessInfo(pid: number) {
 // 	return new Promise((acc, rej) => {
@@ -53,6 +55,8 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 		let terminal = vscode.window.activeTerminal;
+		terminal?.dispose();
+		terminal = vscode.window.createTerminal('Haskell');
 		if (!terminal) {
 
 			vscode.window.showInformationMessage(`No active terminal`);
@@ -65,13 +69,42 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.window.showInformationMessage(`Error: No PID for active terminal`);
 			return;
 		}
-		// let processData = await getProcessInfo(pid);
-		vscode.window.showInformationMessage(`Reloading ${relative} in ${pid}`);
-		terminal.show(true)
+		let hsFileName = path.basename(abs, ".hs");
+		let parentFolder = path.dirname(abs);
+		let testFile = path.join(parentFolder, hsFileName + ".testCmd");
+		terminal.show(true);
+		terminal.sendText(':q', true);
+		await delay(500);
+		terminal.sendText('clear', true);
+		await delay(300);
+		terminal.sendText('ghci', true);
+		await delay(300);
 		terminal.sendText(`:l ${relative}`, true);
+		await delay(300);
+
+		if (fs.existsSync(testFile)) {
+			vscode.window.showInformationMessage(`Reloading ${relative} in ${pid} with test file`);
+			let commands = fs.readFileSync(testFile, { encoding: 'utf-8' }).split("\n");
+			for (let cmd of commands) {
+				terminal.sendText(cmd, true);
+				await delay(100);
+			}
+
+		} else {
+
+			vscode.window.showInformationMessage(`Reloading ${relative} in ${pid}`);
+		}
+		// let processData = await getProcessInfo(pid);
+
+
 	});
 
 	context.subscriptions.push(disposable);
+}
+async function delay(millis: number) {
+	return new Promise((acc) => {
+		setTimeout(acc, millis);
+	});
 }
 
 // this method is called when your extension is deactivated
